@@ -1,0 +1,60 @@
+name: 每日自动签到
+
+on:
+  schedule:
+    # GitHub Actions 的 cron 用 UTC 时间
+    # 16:05 UTC = 北京时间次日 00:05
+    - cron: "5 16 * * *"
+    # 兜底一次：GitHub 的定时任务偶发延迟甚至丢跑，00:35 再试一遍
+    # 脚本本身是幂等的，已签到会识别成成功，不会重复领也不会报错
+    - cron: "35 16 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "只打印请求，不真正签到"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: doubao-checkin
+  cancel-in-progress: false
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 执行签到
+        env:
+          # ---- 必填 ----
+          DOUBAO_COOKIE: ${{ secrets.DOUBAO_COOKIE }}
+          DOUBAO_CHECKIN_URL: ${{ secrets.DOUBAO_CHECKIN_URL }}
+          DOUBAO_CHECKIN_METHOD: ${{ secrets.DOUBAO_CHECKIN_METHOD }}
+          DOUBAO_CHECKIN_BODY: ${{ secrets.DOUBAO_CHECKIN_BODY }}
+          DOUBAO_EXTRA_HEADERS: ${{ secrets.DOUBAO_EXTRA_HEADERS }}
+          # ---- 判定规则（可选）----
+          DOUBAO_SUCCESS_KEYWORDS: ${{ secrets.DOUBAO_SUCCESS_KEYWORDS }}
+          DOUBAO_ALREADY_KEYWORDS: ${{ secrets.DOUBAO_ALREADY_KEYWORDS }}
+          DOUBAO_SUCCESS_JSON_PATH: ${{ secrets.DOUBAO_SUCCESS_JSON_PATH }}
+          # ---- 通知（可选）----
+          DOUBAO_NOTIFY: ${{ secrets.DOUBAO_NOTIFY }}
+          DOUBAO_NOTIFY_ON_ALREADY: ${{ secrets.DOUBAO_NOTIFY_ON_ALREADY }}
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          BARK_URL: ${{ secrets.BARK_URL }}
+          CUSTOM_WEBHOOK: ${{ secrets.CUSTOM_WEBHOOK }}
+        run: python main.py ${{ inputs.dry_run && '--dry-run' || '' }}

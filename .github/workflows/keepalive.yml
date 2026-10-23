@@ -1,0 +1,36 @@
+name: 保活
+
+# GitHub 会在公开仓库连续 60 天没有提交活动后，自动暂停里面的定时任务。
+# 这个 workflow 每月提交一次心跳文件，避免签到任务被悄悄关掉。
+# 不需要的话直接删掉本文件即可。
+
+on:
+  schedule:
+    - cron: "0 3 1 * *" # 每月 1 号 11:00（北京时间）
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 更新时间戳
+        run: |
+          mkdir -p state
+          date -u '+%Y-%m-%dT%H:%M:%SZ' > state/heartbeat.txt
+
+      - name: 提交
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/heartbeat.txt
+          if git diff --cached --quiet; then
+            echo "无变化，跳过"
+          else
+            git commit -m "chore: 心跳 $(date -u '+%Y-%m')"
+            git push
+          fi

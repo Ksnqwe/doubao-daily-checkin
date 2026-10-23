@@ -1,0 +1,21 @@
+# 账号凭据
+.env
+.env.*
+!.env.example
+
+# 运行产物
+logs/
+*.log
+state/*.local
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
