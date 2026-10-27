@@ -43,6 +43,7 @@ jobs:
           DOUBAO_CHECKIN_URL: ${{ secrets.DOUBAO_CHECKIN_URL }}
           DOUBAO_CHECKIN_METHOD: ${{ secrets.DOUBAO_CHECKIN_METHOD }}
           DOUBAO_CHECKIN_BODY: ${{ secrets.DOUBAO_CHECKIN_BODY }}
+          DOUBAO_USER_AGENT: ${{ secrets.DOUBAO_USER_AGENT }}
           DOUBAO_EXTRA_HEADERS: ${{ secrets.DOUBAO_EXTRA_HEADERS }}
           # ---- 判定规则（可选）----
           DOUBAO_SUCCESS_KEYWORDS: ${{ secrets.DOUBAO_SUCCESS_KEYWORDS }}
